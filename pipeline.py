@@ -88,10 +88,6 @@ class CXRImageRetrieval:
         
         if not response.predictions:
             raise Exception("No predictions returned from the API")
-        
-        # Save the response locally
-        with open('api_response.txt', 'a') as f:
-            f.write(f"{response.predictions[0]}\n")
             
         contrastive_img_emb = response.predictions[0]["contrastive_img_emb"]
         # Convert list of lists to numpy array and flatten

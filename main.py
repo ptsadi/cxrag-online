@@ -1,6 +1,7 @@
 import os
 import tempfile
 from typing import Dict, List, Any
+import time
 
 from PIL import Image
 import streamlit as st
@@ -58,7 +59,9 @@ class ReportGenerator:
     def __init__(self, api_key: str):
         configure(api_key=api_key)
         self.model = GenerativeModel('gemini-1.5-pro')
-        
+        self.max_retries = 3
+        self.retry_delay = 5  # seconds
+    
     def _prepare_image(self, image_path: str, max_size: tuple = (800, 800)) -> Image:
         with Image.open(image_path) as img:
             if img.mode != 'RGB':
@@ -84,8 +87,18 @@ Context reports: {context}
 
 Impression summary:"""
 
-        response = self.model.generate_content([prompt.format(context=context), img])
-        return response.text
+        for attempt in range(self.max_retries):
+            try:
+                response = self.model.generate_content([prompt.format(context=context), img])
+                return response.text
+            except Exception as e:
+                if attempt == self.max_retries - 1:  # Last attempt
+                    st.error(f"Failed to generate report after {self.max_retries} attempts: {str(e)}")
+                    return "Error: Unable to generate report due to API limitations. Please try again later."
+                else:
+                    st.warning(f"Attempt {attempt + 1} failed. Retrying in {self.retry_delay} seconds...")
+                    time.sleep(self.retry_delay)
+
 
 class CXRImpressionApp:
     def __init__(self):
