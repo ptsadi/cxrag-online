@@ -1,0 +1,8 @@
+model_files/
+.idea
+__pycache__
+.venv
+.env
+.streamlit/secrets.toml
+.DS_Store
+cxrag-446518-1841377c6ab2.json
