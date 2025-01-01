@@ -15,7 +15,7 @@ class VectorDBManager:
         self.pc = Pinecone(api_key=api_key)
         self.index = self.pc.Index(index_name)
     
-    def retrieve_similar_images(self, image_embedding: List[float], threshold: float = 0.95) -> Dict[str, List]:
+    def retrieve_similar_images(self, image_embedding: List[float], threshold: float = 0.98) -> Dict[str, List]:
         query_results = self.index.query(
             vector=image_embedding,
             top_k=10,
@@ -129,8 +129,11 @@ class CXRImpressionApp:
             st.write(f"Number of files uploaded: {len(st.session_state.uploaded_files)}")
             if not st.session_state.processing_started:
                 if st.button("Start Processing" if st.session_state.current_file_index == 0 else "Start New Batch"):
+                    # Reset all relevant session state variables
+                    self._clear_current_state()
+                    st.session_state.current_file_index = 0
+                    st.session_state.accuracy_stats = {'correct': 0, 'total': 0}
                     st.session_state.processing_started = True
-                    st.session_state.current_file_index = 0  # Reset index when starting new batch
                     st.rerun()
             
             # Only show processing if started
@@ -215,14 +218,15 @@ class CXRImpressionApp:
 
     def _clear_current_state(self):
         # Clear temporary state variables
-        if 'current_embedding' in st.session_state:
-            del st.session_state.current_embedding
-        if 'current_query_results' in st.session_state:
-            del st.session_state.current_query_results
-        if 'current_report' in st.session_state:
-            del st.session_state.current_report
-        if 'editing_mode' in st.session_state:
-            del st.session_state.editing_mode
+        keys_to_clear = [
+            'current_embedding',
+            'current_query_results',
+            'current_report',
+            'editing_mode'
+        ]
+        for key in keys_to_clear:
+            if key in st.session_state:
+                del st.session_state[key]
 
     def _handle_manual_impression(self):
         edited_impression = st.text_area("Edit Impression:", value=st.session_state.current_report)

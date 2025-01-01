@@ -20,5 +20,5 @@ RUN poetry config virtualenvs.create false \
 # Expose port
 EXPOSE 8501
 
-# Run streamlit
-CMD poetry run streamlit run main.py --server.address=0.0.0.0
+# Run streamlit with dynamic port from Heroku
+CMD poetry run streamlit run main.py --server.address=0.0.0.0 --server.port=$PORT
