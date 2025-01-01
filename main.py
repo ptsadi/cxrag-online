@@ -209,11 +209,14 @@ class CXRImpressionApp:
         if not st.session_state.editing_mode:
             col1, col2, col3 = st.columns([1, 1, 12])  # Adjusted column ratio to bring buttons closer
             with col1:
-                if st.button("👍", key=f"thumbs_up_{st.session_state.current_file_index}"):
-                    st.session_state.accuracy_stats['correct'] += 1
-                    st.session_state.accuracy_stats['total'] += 1
-                    self._clear_current_state()
-                    self._next_image()
+                clicked_approve = st.button("👍", key=f"thumbs_up_{st.session_state.current_file_index}")
+            
+            # Handle button click outside of column
+            if clicked_approve:
+                st.session_state.accuracy_stats['correct'] += 1
+                st.session_state.accuracy_stats['total'] += 1
+                self._clear_current_state()
+                self._next_image()
             
             with col2:
                 if st.button("👎", key=f"thumbs_down_{st.session_state.current_file_index}"):
@@ -259,7 +262,13 @@ class CXRImpressionApp:
             st.rerun()
         else:
             st.session_state.processing_started = False  # Reset processing state
-            st.success("All images processed!")
+            # Clear any existing columns by creating a new container
+            with st.container():
+                st.markdown("""
+                    <div style='background-color: #1a472a; padding: 15px; border-radius: 8px; margin: 10px 0;'>
+                        <p style='color: #e0e0e0; margin: 0; text-align: center;'>All images processed!</p>
+                    </div>
+                """, unsafe_allow_html=True)
 
 if __name__ == '__main__':
     app = CXRImpressionApp()
